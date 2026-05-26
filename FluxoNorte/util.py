@@ -95,3 +95,17 @@ def menuEntregadores(entregadores):
     for ent in entregadores.keys():
         print(f"|ID {ent} - {entregadores[ent][0]}")
     print("-----------------------")
+
+#gerar_id_entregadores feito pelo Thomas
+def gerar_id_entregador (entregadores):
+    chaves_entregadores = entregadores.keys()
+    
+    maior_id = 0
+    for chave_id in chaves_entregadores:
+        int_chave_id = int(chave_id)
+        
+        if int_chave_id > maior_id:
+            maior_id = int_chave_id
+    
+    maior_id += 1
+    return str(maior_id).zfill(4)

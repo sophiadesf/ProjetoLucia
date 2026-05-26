@@ -64,7 +64,7 @@ while opcao != 9:
             util.limpar_tela()
             print("FLUXO NORTE\n")
             print("CADASTRAR PEDIDO\n")
-            id              = util.geraIdPedido()
+            id              = util.gerar_id_entregador(entregadores)
             nomeEntregador  = ""
             veiculo         = ""
             idsPedido       = []
@@ -96,3 +96,5 @@ while opcao != 9:
         case _:
             util.limpar_tela()
             print("Ops! Opção inválida, tente novamente.")
+
+
