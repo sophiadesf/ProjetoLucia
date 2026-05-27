@@ -2,8 +2,21 @@ import os
 def limpar_tela():
     os.system('clear')
 
-def geraIdPedido():
-    return 1
+# geração de id feita pelo Thomas
+def gerarIdPedido(pedidos, nome_cliente):
+    chaves_pedidos = pedidos.keys()
+    inicial_cliente = nome_cliente[0]
+    maior_id = 0
+    for chave_id in chaves_pedidos:
+        
+        int_chave_id = int(chave_id[1]+chave_id[2]+chave_id[3]+chave_id[4])
+        
+        if int_chave_id > maior_id:
+            maior_id = int_chave_id
+    
+    maior_id += 1
+    id_pedido = inicial_cliente + str(maior_id).zfill(4)
+    return id_pedido
 
 def selecionePrioridade():
     retPrioridade = ""
@@ -28,16 +41,19 @@ def selecioneStatus():
     retStatus = ""
     while retStatus == "":
         print("-------STATUS-------")
-        print("| 0 - Pendente      |")
-        print("| 1 - Alta          |")
+        print("| 1 - Pendente       |")
+        print("| 2 - Em trânsito    |")
+        print("| 3 - Entregue       |")
         print("--------------------\n")
 
-        prioridade = int(input("Digite a prioridade do pedido: "))
-        match prioridade:
-            case 0:
-                retStatus = "Normal"
+        status = int(input("Digite o status do pedido: "))
+        match status:
             case 1:
-                retStatus = "Alta"
+                retStatus = "Pendente"
+            case 2:
+                retStatus = "Em trânsito"
+            case 3:
+                retStatus = "Entregue"
             case _:
                 print("Opção inválida! Tente novamente.")
 
@@ -126,9 +142,8 @@ def busca_entregador_disp (entregadores):
         print("\tEstão Indisponíveis")
 
 
-
 #função da consulta feita pelo Thomas
-def selecionar_consulta (entregadores):
+def selecionar_consulta(entregadores):
     ret_consulta = ""
     while ret_consulta == "":
         print("--------------CONSULTA--------------")
@@ -157,3 +172,16 @@ def selecionar_consulta (entregadores):
                 print("Opção inválida! Tente novamente.")
                 
     return ret_consulta 
+
+def selecionaEntregador(entregadores):
+    menuEntregadores(entregadores)
+    entregadorSelecionado = None
+    while entregadorSelecionado is None:
+        entregador = input("Insira o ID do entregador: ")
+        if entregador in entregadores:
+            entregadorSelecionado = [entregador, entregadores[entregador][0]]
+        else:
+            print("Ops! Entregador não encontrado. Insira um ID válido")
+
+    entregadores[entregadorSelecionado[0]][2].append(id)
+            
