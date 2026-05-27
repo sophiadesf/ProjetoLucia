@@ -85,8 +85,13 @@ while opcao != 9:
             print(f" -> Disponibilidade: {disponibilidade}")
             print("\n\n")
             continue
+       
         case 4:
-            pass
+            util.selecionar_consulta(entregadores)
+            
+
+
+
         case 0:
             util.limpar_tela()
             print("\nFINALIZAR SISTEMA\n")

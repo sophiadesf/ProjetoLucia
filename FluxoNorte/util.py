@@ -109,3 +109,51 @@ def gerar_id_entregador (entregadores):
     
     maior_id += 1
     return str(maior_id).zfill(4)
+
+#função busca entregador disponivel feita pelo Thomas
+def busca_entregador_disp (entregadores):
+    print("--------RESULTADO-DA-CONSULTA--------")
+    print("\tEstes entregadores:")
+    entregadores_disp = False
+    for id, dados_entregador in entregadores.items():
+        if (dados_entregador[3] == "Disponível"):
+            entregadores_disp = True
+            print(f"\tID:{id} // Nome: {dados_entregador[0]}")
+    
+    if (entregadores_disp):
+        print("\tEstão Disponíveis")
+    else:
+        print("\tEstão Indisponíveis")
+
+
+
+#função da consulta feita pelo Thomas
+def selecionar_consulta (entregadores):
+    ret_consulta = ""
+    while ret_consulta == "":
+        print("--------------CONSULTA--------------")
+        print("| 0 - Pedidos Pendentes            |")
+        print("| 1 - Pedidos Entregues            |")
+        print("| 2 - Buscar Pedido por ID         |")
+        print("| 3 - Entregador Disponível        |")
+        print("| 4 - Todas as Entregas Realizadas |")
+        print("|     por um Entregador            |")
+        print("------------------------------------\n")
+
+        consulta = int(input("Digite o que você deseja consultar: "))
+        match consulta:
+            case 0:
+                ret_consulta = "Pedidos Pendentes" #chamar função de pedidos pendentes
+            case 1:
+                ret_consulta = "Pedidos Entregues" #chamar função de pedidos entregues
+            case 2:
+                ret_consulta = "Buscar Pedido por ID" # ... busca de pedido por ID
+            case 3: 
+                busca_entregador_disp(entregadores)
+                break
+            case 4:
+                ret_consulta = "Todas as Entregas Realizadas por um Entregador"
+            case _:
+                print("Opção inválida! Tente novamente.")
+                
+    return ret_consulta 
