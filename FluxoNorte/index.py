@@ -1,28 +1,32 @@
 import util as util
 print("FLUXO NORTE\n")
 pedidos = {} # {"idPedido": ["Nome Cliente", "Endereço", "Prioridade", "Descricao", "status", "id_entregador"]
-print(pedidos)
-entregadores = {} # {"idEntregador": ["Nome Entregador", "Veículo", [], [periodo1, periodo2]]}
+entregadores = {} # {"idEntregador": ["Nome Entregador", "Veículo", [], [periodo1, periodo2], carga_max]}
 opcao = -1
-while opcao != 9:
+numero_id_pedidos_atual = 0
+numero_id_entregadores_atual = 0
+
+while opcao != "0":
     print("----------SELECIONE-----------")
     print("| 1 - Cadastrar Pedido       |")
     print("| 2 - Atualizar Pedido       |")
     print("| 3 - Cadastrar Entregador   |")
     print("| 4 - Consultar              |")
+    print("| 5 - Exibir Relatórios      |") # fazer menu INTEIRO
     print("| 0 - Finalizar Sistema      |")
     print("------------------------------")
 
-    opcao = int(input("Selecione a opção desejada: "))
+    opcao = input("Selecione a opção desejada: ")
     match(opcao):
-        case 1:
+        case "1":
             util.limpar_tela()
             print("FLUXO NORTE\n")
             print("CADASTRAR PEDIDO\n")
-            nomeCliente = ""
-            endereco    = ""
-            descricao   = ""
-            status      = "Pendente"
+            nomeCliente   = ""
+            endereco      = ""
+            descricao     = ""
+            status        = "Pendente"
+            id_entregador = ""
 
             while nomeCliente == "":
                 nomeCliente = str(input("Digite o nome do cliente: "))
@@ -32,26 +36,22 @@ while opcao != 9:
             
             while descricao == "":
                 descricao   = input("Digite a descrição do pedido: ")
-    
+
+            id_entregador = util.selecionar_entregador(entregadores)
             
             prioridade = util.selecionePrioridade()
-            id     = util.gerarIdPedido(pedidos, nomeCliente)
 
-            pedidos[id] = [nomeCliente, endereco, prioridade, descricao, status, -1]
-            print(pedidos)
+            numero_id_pedidos_atual +=1
+            id = util.gerarIdPedido(nomeCliente, numero_id_pedidos_atual)
+
+            pedidos[id] = [nomeCliente, endereco, prioridade, descricao, status, id_entregador]
             
             util.limpar_tela()
             print("\nPEDIDO CADASTRADO")
-            print(f" -> ID Pedido: {id}                  ")
-            print(f" -> Nome Cliente: {nomeCliente}      ")
-            print(f" -> Endereço: {endereco}             ")
-            print(f" -> Descrição: {descricao}           ")
-            print(f" -> Prioridade: {prioridade}         ")
-            print(f" -> Status: {status}                 ")
-            print(f" -> Entregador: Não selecionado      ")
-            print("\n\n")
+            util.display_pedido(pedidos, id)
+
             continue
-        case 2:
+        case "2":
             util.limpar_tela()
             print("FLUXO NORTE\n")
             print("ATUALIZAR PEDIDO\n")
@@ -61,13 +61,14 @@ while opcao != 9:
                 for id_ped in pedidos.keys():
                     if (idPedido == id_ped):
                         pedidoSelecionado = pedidos[id_ped]
+                        
                         print(f"Pedido #{id_ped} encontrado. Selecione o que deseja atualizar:")
                         continue
                 
                     print("Pedido não encontrado! Insira um id válido")
                 
             opcao = -1
-            while opcao != 0:
+            while opcao != "0":
                 print("-------------------------------------------------")
                 print("| 1 - Alterar Status Pedido                     |")
                 print("| 2 - Cancelar Pedido                           |")
@@ -76,43 +77,50 @@ while opcao != 9:
                 print("| 0 - Cancelar Atualização                      |")
                 print("-------------------------------------------------")
 
-                opcao = int(input("Selecione a opção desejada: "))
+                opcao = input("Selecione a opção desejada: ")
                 match opcao:
-                    case 1:
+                    case "1":
                         print("ALTERAR STATUS PEDIDO\n")
                         pass
-                    case 2:
+                    case "2":
                         print("CANCELAR PEDIDO\n")
                         pass
-                    case 3:
-                        print("ASSOCIAR ENTREGADOR Á PEDIDO\n")
-                        pass
-                    case 4:
+                    case "3":
+                        idPedido = util.selecionar_pedido(pedidos)
+                        id_entregador = util.selecionar_entregador(entregadores)
+
+                    case "4":
                         print("ALTERAR STATUS PEDIDO\n")
                         pass
-                    case 0:
+                    case "0":
                         print("CANCELANDO ATUALIZAÇÃO\n")
                         util.limpar_tela()
                         continue
                     case _:
                         print("Opção inválida! Tente novamente")
 
-        case 3:
+        case "3":
             util.limpar_tela()
             print("FLUXO NORTE\n")
-            print("CADASTRAR PEDIDO\n")
-            id              = util.gerar_id_entregador(entregadores)
+            print("CADASTRAR ENTREGADOR\n")
+            numero_id_entregadores_atual+=1
+            id              = util.gerar_id_entregador(numero_id_entregadores_atual)
             nomeEntregador  = ""
             veiculo         = ""
-            idsPedido       = []
+            ids_pedidos     = []
+            entregas        = 0
             disponibilidade = "Disponível"
 
             while nomeEntregador == "":
                 nomeEntregador = input("Digite o nome do entregador: ")
+        
+            disponibilidade = util.definir_disponibilidade()
 
             veiculo = util.selecioneVeiculo()
             
-            entregadores[id] = [nomeEntregador, veiculo, idsPedido, disponibilidade]
+            carga_max = util.carga(veiculo)
+
+            entregadores[id] = [nomeEntregador, veiculo, ids_pedidos, disponibilidade, entregas, carga_max]
             util.limpar_tela()
             print("\nENTREGADOR CADASTRADO")
             print(f" -> ID Entregador: {id}              ")
@@ -123,17 +131,15 @@ while opcao != 9:
             print("\n\n")
             continue
        
-        case 4:
+        case "4":
             util.selecionar_consulta(entregadores)
     
-        case 0:
+        case "0":
             util.limpar_tela()
             print("\nFINALIZAR SISTEMA\n")
             if util.verificaFinalizar():
-                opcao = 9 
-            continue
+                break
         case _:
-            util.limpar_tela()
             print("Ops! Opção inválida, tente novamente.")
 
 

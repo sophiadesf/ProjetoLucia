@@ -1,21 +1,18 @@
 import os
 def limpar_tela():
-    os.system('clear')
+    os.system('cls')
 
-# geração de id feita pelo Thomas
-def gerarIdPedido(pedidos, nome_cliente):
-    chaves_pedidos = pedidos.keys()
-    inicial_cliente = nome_cliente[0]
-    maior_id = 0
-    for chave_id in chaves_pedidos:
-        
-        int_chave_id = int(chave_id[1]+chave_id[2]+chave_id[3]+chave_id[4])
-        
-        if int_chave_id > maior_id:
-            maior_id = int_chave_id
-    
-    maior_id += 1
-    id_pedido = inicial_cliente + str(maior_id).zfill(4)
+# precisamos adicionar opções de "cancelar e voltar ao o menu anterior" em todos os menus
+
+# entregadores podem entregar multiplos (2, 4 ou 6, depende do veiculo) pedidos,
+# mas cada pedido só pode ser entregue por um entregador.
+
+
+# geração de id "corrigida" pelo Thomas
+def gerarIdPedido(nome_cliente, numero_id_atual):
+    inicial_cliente = str(nome_cliente[0]).upper()
+
+    id_pedido = inicial_cliente + str(numero_id_atual).zfill(4)
     return id_pedido
 
 def selecionePrioridade():
@@ -26,17 +23,19 @@ def selecionePrioridade():
         print("| 1 - Alta         |")
         print("--------------------\n")
 
-        prioridade = int(input("Digite a prioridade do pedido: "))
+        prioridade = input("Digite a prioridade do pedido: ")
         match prioridade:
-            case 0:
+            case "0":
                 retPrioridade = "Normal"
-            case 1:
+            case "1":
                 retPrioridade = "Alta"
             case _:
                 print("Opção inválida! Tente novamente.")
                 
+                
     return retPrioridade
 
+#atualização de status 
 def selecioneStatus():
     retStatus = ""
     while retStatus == "":
@@ -59,6 +58,7 @@ def selecioneStatus():
 
     return retStatus
 
+#quero adicionar a carga do veiculo, mas não sei fazer o sistema usar
 def selecioneVeiculo():
     retVeiculo = ""
     while retVeiculo == "":
@@ -80,6 +80,7 @@ def selecioneVeiculo():
                 print("Opção inválida! Tente novamente.")
 
     return retVeiculo
+
 
 def verificaFinalizar():
     finalizar = False
@@ -106,30 +107,58 @@ def verificaFinalizar():
     return finalizar
 
 
-def menuEntregadores(entregadores):
+def menu_entregadores(entregadores, texto_pesquisa):
     print("-------SELECIONE-------")
     for ent in entregadores.keys():
-        print(f"|ID {ent} - {entregadores[ent][0]}")
+        if texto_pesquisa in entregadores[ent][0] or texto_pesquisa in ent:
+            print(f"|ID {ent} - {entregadores[ent][0]}")
     print("-----------------------")
 
+def menu_pedidos(pedidos, texto_pesquisa):
+    print("-------SELECIONE-------")
+    for id in pedidos.keys():
+        if texto_pesquisa in pedidos[id][0] or texto_pesquisa in id:
+            print(f"|ID {id} de {pedidos[id][0]}, descrição: {pedidos[id][3]}")
+    print("-----------------------")
+
+
 #gerar_id_entregadores feito pelo Thomas
-def gerar_id_entregador (entregadores):
-    chaves_entregadores = entregadores.keys()
-    
-    maior_id = 0
-    for chave_id in chaves_entregadores:
-        int_chave_id = int(chave_id)
-        
-        if int_chave_id > maior_id:
-            maior_id = int_chave_id
-    
-    maior_id += 1
-    return str(maior_id).zfill(4)
+def gerar_id_entregador (numero_id_atual):
+    return str(numero_id_atual).zfill(4)
+
+#função disponibilidade feito pelo Thomas
+def definir_disponibilidade ():
+    retDisponibilidade = ""
+    while retDisponibilidade == "":
+        print("-------SELECIONE------")
+        print("| 1 - Diponível      |")
+        print("| 2 - Indisponível   |")
+        print("----------------------\n")
+
+        disponibilidade = int(input("Selecione a disponibilidade do entregador: "))
+        match disponibilidade:
+            case 1:
+                retDisponibilidade = "Disponível"
+            case 2:
+                retDisponibilidade = "Indisponível"
+            case _:
+                print("Opção inválida! Tente novamente.")
+
+    return retDisponibilidade
+
+def carga(veiculo):
+    if veiculo == "Moto":
+        carga_max = 2
+    if veiculo == "Carro":
+        carga_max = 4
+    if veiculo == "Van":
+        carga_max = 6
+    return carga_max
 
 #função busca entregador disponivel feita pelo Thomas
 def busca_entregador_disp (entregadores):
     print("--------RESULTADO-DA-CONSULTA--------")
-    print("\tEstes entregadores:")
+    print("\tOs entregadores:")
     entregadores_disp = False
     for id, dados_entregador in entregadores.items():
         if (dados_entregador[3] == "Disponível"):
@@ -143,7 +172,7 @@ def busca_entregador_disp (entregadores):
 
 
 #função da consulta feita pelo Thomas
-def selecionar_consulta(entregadores):
+def selecionar_consulta(entregadores): #add pedidos como parametro depois
     ret_consulta = ""
     while ret_consulta == "":
         print("--------------CONSULTA--------------")
@@ -173,15 +202,90 @@ def selecionar_consulta(entregadores):
                 
     return ret_consulta 
 
-def selecionaEntregador(entregadores):
-    menuEntregadores(entregadores)
+def selecionar_entregador_por_id (entregadores):
+    id_correto = None
+    while id_correto == None and id_correto != "0":
+        print("(digite 0 para voltar ao menu anterior)")
+        opcao = input("Digite o ID do Entregador selecionado:")
+        if opcao in entregadores:
+            id_correto = opcao 
+        elif (id_correto != "0"):
+            print("Ops! Entregador não encontrado ou Removido. Insira um ID válido!")
+    return id_correto
+
+
+
+def selecionar_entregador(entregadores):
+    id_entregador = None
+    while id_entregador is None:
+        print("---------------------SELECIONE-------------------")
+        print("| Digite 1 para selecionar Entregador (pelo ID) |")
+        print("| Digite 2 para pesquisar Entregador            |")
+        print("| Digite 0 para pular cadastro de Entregador    |")
+        print("-------------------------------------------------")
+        opcao = input("Digite aqui:")
+        match opcao:
+            case "1":
+                id_entregador = selecionar_entregador_por_id(entregadores)
+            case "2":
+                id_entregador = pesquisar_entregador(entregadores)
+            case "0":
+                break
+    return id_entregador
+
+
+    
+def pesquisar_entregador(entregadores):
     entregadorSelecionado = None
     while entregadorSelecionado is None:
-        entregador = input("Insira o ID do entregador: ")
-        if entregador in entregadores:
-            entregadorSelecionado = [entregador, entregadores[entregador][0]]
-        else:
-            print("Ops! Entregador não encontrado. Insira um ID válido")
+        limpar_tela()
+        texto_pesquisado = input("Pesquise o Entregador pelo Nome ou ID: ")
+        print ("(digite 0 para sair da pesquisa)")
+        menu_entregadores(entregadores, texto_pesquisado)
+        print("Digite 0 para continuar Pesquisa")
+        print("Digite 1 para selecionar Entregador (por ID)")
+        opcao = input("Digite aqui: ")
+        match opcao:
+            case "0":
+                continue
+            case "1":
+                id_correto = ""
+                while id_correto == "" and id_correto != "0":
+                    print("(digite 0 para voltar ao menu anterior)")
+                    opcao = input("Digite o ID do Entregador selecionado:")
+                    if opcao in entregadores:
+                        id_correto = opcao
+                        entregadorSelecionado = id_correto
+                    else:
+                        print("Ops! Entregador não encontrado ou Removido. Insira um ID válido!")
 
-    entregadores[entregadorSelecionado[0]][2].append(id)
+    return entregadorSelecionado
+
+
+def selecionar_pedido(pedidos):
+    menu_pedidos(pedidos)
+    pedido_selecionado = None
+    while pedido_selecionado is None:
+        pedido = input("Insira o ID do pedido: ")
+        if pedido in pedidos:
+            pedido_selecionado = pedido
+        else:
+            print("Ops! Pedido não encontrado ou Cancelado. Insira um ID válido!")
+
+    return pedido_selecionado
+
+# feito por thomas
+def display_pedido(pedidos, id):
+    print(f" -> ID Pedido: {id}                  ")
+    print(f" -> Nome Cliente: {pedidos[id][0]}")
+    print(f" -> Endereço: {pedidos[id][1]}")
+    print(f" -> Prioridade: {pedidos[id][2]}")
+    print(f" -> Descrição: {pedidos[id][3]}")
+    print(f" -> Status: {pedidos[id][4]}")
+    if(pedidos[id][5] == ""):
+        print(f" -> Entregador: Não selecionado")
+    else:
+        print(f" -> Entregador: {pedidos[id][5]}")
+    
+    print("\n\n")
             
