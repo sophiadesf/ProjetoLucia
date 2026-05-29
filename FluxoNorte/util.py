@@ -18,20 +18,20 @@ def gerarIdPedido(nome_cliente, numero_id_atual):
 def selecionePrioridade():
     retPrioridade = ""
     while retPrioridade == "":
-        print("-----PRIORIDADE-----")
-        print("| 0 - Normal       |")
-        print("| 1 - Alta         |")
-        print("--------------------\n")
+        print("-----------PRIORIDADE----------")
+        print("| 1 - Normal                  |")
+        print("| 2 - Alta                    |")
+        print("| 0 - Voltar ao Menu Anterior |")
+        print("-------------------------------\n")
 
         prioridade = input("Digite a prioridade do pedido: ")
         match prioridade:
-            case "0":
-                retPrioridade = "Normal"
             case "1":
+                retPrioridade = "Normal"
+            case "2":
                 retPrioridade = "Alta"
             case _:
                 print("Opção inválida! Tente novamente.")
-                
                 
     return retPrioridade
 
@@ -39,11 +39,13 @@ def selecionePrioridade():
 def selecioneStatus():
     retStatus = ""
     while retStatus == "":
-        print("-------STATUS-------")
-        print("| 1 - Pendente       |")
-        print("| 2 - Em trânsito    |")
-        print("| 3 - Entregue       |")
-        print("--------------------\n")
+        print("------------STATUS-------------")
+        print("| 1 - Pendente                |")
+        print("| 2 - Em Rota                 |")
+        print("| 3 - Entregue                |")
+        print("| 4 - Cancelado               |")
+        print("| 0 - Voltar ao Menu Anterior |")
+        print("-------------------------------\n")
 
         status = int(input("Digite o status do pedido: "))
         match status:

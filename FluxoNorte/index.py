@@ -7,14 +7,14 @@ numero_id_pedidos_atual = 0
 numero_id_entregadores_atual = 0
 
 while opcao != "0":
-    print("----------SELECIONE-----------")
-    print("| 1 - Cadastrar Pedido       |")
-    print("| 2 - Atualizar Pedido       |")
-    print("| 3 - Cadastrar Entregador   |")
-    print("| 4 - Consultar              |")
-    print("| 5 - Exibir Relatórios      |") # fazer menu INTEIRO
-    print("| 0 - Finalizar Sistema      |")
-    print("------------------------------")
+    print("-----------SELECIONE-----------")
+    print("| 1 - Cadastrar Pedido        |")
+    print("| 2 - Atualizar Pedido        |")
+    print("| 3 - Cadastrar Entregador    |")
+    print("| 4 - Consultar               |")
+    print("| 5 - Relatórios Operacionais |") # fazer menu INTEIRO
+    print("| 0 - Finalizar Sistema       |")
+    print("-------------------------------")
 
     opcao = input("Selecione a opção desejada: ")
     match(opcao):
@@ -29,13 +29,12 @@ while opcao != "0":
             id_entregador = ""
 
             while nomeCliente == "":
-                nomeCliente = str(input("Digite o nome do cliente: "))
-
+                nomeCliente = input("Digite o nome do Cliente: ")
             while endereco == "":
-                endereco    = input("Digite o endereço do pedido: ")
+                endereco    = input("Digite o endereço de Entrega: ")
             
             while descricao == "":
-                descricao   = input("Digite a descrição do pedido: ")
+                descricao   = input("Digite a descrição do Pedido: ")
 
             id_entregador = util.selecionar_entregador(entregadores)
             
@@ -141,5 +140,3 @@ while opcao != "0":
                 break
         case _:
             print("Ops! Opção inválida, tente novamente.")
-
-
