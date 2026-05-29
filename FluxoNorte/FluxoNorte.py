@@ -1,4 +1,7 @@
 import os
+pedidos = {} 
+entregadores = {}  
+
 def limpar_tela():
     if os.name == 'nt':
         os.system('cls') 
@@ -109,15 +112,7 @@ def verificaFinalizar():
                 print("Opção inválida! Tente novamente.")
     return finalizar
 
-
-def menuEntregadores(entregadores):
-    print("-------SELECIONE-------")
-    for ent in entregadores.keys():
-        print(f"|ID {ent} - {entregadores[ent][0]}")
-    print("-----------------------")
-
-
-def gerar_id_entregador (entregadores):
+def gerar_id_entregador(entregadores):
     chaves_entregadores = entregadores.keys()
     
     maior_id = 0
@@ -207,18 +202,6 @@ def selecionar_consulta(entregadores, pedidos):
                 
     return ret_consulta 
 
-def selecionaEntregador(entregadores):
-    menuEntregadores(entregadores)
-    entregadorSelecionado = None
-    while entregadorSelecionado is None:
-        entregador = input("Insira o ID do entregador: ")
-        if entregador in entregadores:
-            entregadorSelecionado = [entregador, entregadores[entregador][0]]
-        else:
-            print("Ops! Entregador não encontrado. Insira um ID válido")
-
-    entregadores[entregadorSelecionado[0]][2].append(id)
-            
 def buscaEntregas(id_entregador, pedidos):
     possui_entregas = False
 
@@ -244,7 +227,7 @@ def buscaPedidos(pedidos, tipo):
         print(f"\nOps! Não encontramos pedidos {tipo}s\n")
 
 def buscaPedidoID(pedidos, id):
-    pedido = pedidos[id]
+    pedido = pedidos.get(id)
     if pedido == None:
         print(f"\nOps! Não encontramos nenhum pedido com o ID {id}s\n")
     else:
@@ -343,7 +326,7 @@ def entregadoresDisponiveis(id_pedido, pedidos, entregadores):
         pedidos_ativos = dados_entregador[2]
         periodos = dados_entregador[3]
 
-        entregadoresDisp.append(id_entregador)
+        
         limite_pedidos = qtdPedidosMaximo(veiculo)
         periodo_ok = periodo_pedido in periodos
         capacidade_ok = len(pedidos_ativos) < limite_pedidos
@@ -351,6 +334,7 @@ def entregadoresDisponiveis(id_pedido, pedidos, entregadores):
         if periodo_ok and capacidade_ok:
             encontrou = True
             vagas_restantes = limite_pedidos - len(pedidos_ativos)
+            entregadoresDisp.append(id_entregador)
 
             print("--------------------------------------------------------------------------------------------")
             print(f"ID: {id_entregador:<5}  Nome: {nome:<20} | Veículo: {veiculo:<25}")
@@ -363,3 +347,220 @@ def entregadoresDisponiveis(id_pedido, pedidos, entregadores):
         print("Nenhum entregador disponível.")
 
     return entregadoresDisp
+
+def cadastrarPedido():
+    print("FLUXO NORTE\n")
+    print("CADASTRAR PEDIDO\n")
+    nomeCliente = ""
+    endereco    = ""
+    descricao   = ""
+    status      = "Pendente"
+    periodoEntrega = ""
+    while nomeCliente == "":
+        nomeCliente = str(input("Digite o nome do cliente: "))
+
+    while endereco == "":
+        endereco    = input("Digite o endereço do pedido: ")
+    
+    while descricao == "":
+        descricao   = input("Digite a descrição do pedido: ")
+
+    print("\nSelecione o periodo de entrega: ")
+    periodoEntrega = selecionePeriodo()
+
+    prioridade = selecionePrioridade()
+    id     = gerarIdPedido(pedidos, nomeCliente)
+
+    pedidos[id] = [nomeCliente, endereco, prioridade, descricao, status, None, periodoEntrega]
+    print(pedidos)
+    
+    limpar_tela()
+    print("\nPEDIDO CADASTRADO")
+    print(f" -> ID Pedido: {id}                  ")
+    print(f" -> Nome Cliente: {nomeCliente}      ")
+    print(f" -> Endereço: {endereco}             ")
+    print(f" -> Descrição: {descricao}           ")
+    print(f" -> Prioridade: {prioridade}         ")
+    print(f" -> Status: {status}                 ")
+    print(f" -> Periodo de Entrega: {periodoEntrega}")
+    print(f" -> Entregador: Não selecionado      ")
+    print("\n\n")
+
+def cancelaPedido(idPedido):
+    id_entregador = pedidos[idPedido][5]
+    if id_entregador is not None:
+        if id_entregador in entregadores:
+            if idPedido in entregadores[id_entregador][2]:
+                entregadores[id_entregador][2].remove(idPedido)
+
+    del pedidos[idPedido]
+    print(f"\nPedido {idPedido} cancelado com sucesso!")
+
+def removeAssociacao(idPedido):
+    id_entregador = pedidos[idPedido][5]
+    if id_entregador is not None:
+        if id_entregador in entregadores:
+            if idPedido in entregadores[id_entregador][2]:
+                entregadores[id_entregador][2].remove(idPedido)
+
+        pedidos[idPedido][5] = None 
+        print(f"\nAssociacao do entregador {id_entregador} ao pedido {idPedido} removido com sucesso!")
+    else:
+        print("\nEste pedido não possui nenhum entregador associado á ele!")
+    verificaVoltar()
+
+def confirmaCancelar(idPedido):
+    confirma = ""
+    while confirma == "":
+        confirma = input("Você tem certeza que deseja cancelar esse pedido? (S/N): ").upper()
+        if confirma not in ['S', 'N']:
+            print("\nDigite uma opção válida!")
+            continue
+
+        if confirma == "S":
+            cancelaPedido(idPedido)
+            verificaVoltar()
+        else:
+            break
+
+def atualizarPedido():
+    print("FLUXO NORTE\n")
+    print("ATUALIZAR PEDIDO\n")
+    opcao = ""
+    while opcao != "0":
+        limpar_tela()
+        print("-----------------------SELECIONE-------------------------")
+        print("| 1 - Alterar Status Pedido                             |")
+        print("| 2 - Cancelar Pedido                                   |")
+        print("| 3 - Associar Entregador á Pedido                      |")
+        print("| 4 - Remover associação de entregador á pedido         |")
+        print("| 0 - Cancelar Atualização                              |")
+        print("---------------------------------------------------------")
+
+        opcao = input("Selecione a opção desejada: ")
+        match opcao:
+            case "1":
+                print("\nALTERAR STATUS PEDIDO\n")
+                idPedido = selecionar_pedido(pedidos)
+                status = selecioneStatus()
+                pedidos[idPedido][4] = status
+                print("Status do pedido alterado com sucesso!")
+                verificaVoltar()
+            case "2":
+                print("\nCANCELAR PEDIDO\n")
+                idPedido = selecionar_pedido(pedidos)
+                confirmaCancelar(idPedido)
+                verificaVoltar()
+            case "3":
+                print("\nASSOCIAR ENTREGADOR Á PEDIDO\n")
+                idPedido = selecionar_pedido(pedidos)
+                entregadoresDisp = entregadoresDisponiveis(idPedido, pedidos, entregadores)
+                id_entregador = busca_entregador(entregadores)
+                associaEntregador(id_entregador, idPedido, entregadoresDisp)
+                verificaVoltar()
+            case "4":
+                idPedido = selecionar_pedido(pedidos)
+                removeAssociacao(idPedido)
+                verificaVoltar()
+            case "0":
+                print("CANCELANDO ATUALIZAÇÃO\n")
+                limpar_tela()
+
+                continue
+            case _:
+                print("Opção inválida! Tente novamente")
+
+def associaEntregador(id_entregador, idPedido, entregadoresDisponiveis):
+    if id_entregador in entregadoresDisponiveis:
+        if pedidos[idPedido][5] is not None:
+            removeAssociacao(idPedido)
+
+        pedidos[idPedido][5] = id_entregador
+        if idPedido not in entregadores[id_entregador][2]:
+            entregadores[id_entregador][2].append(idPedido)
+
+        print(f"\nPedido {idPedido} será entregue pelo Entregador {entregadores[id_entregador][0]}!")
+    else:
+        print("Entregador indisponível!")
+
+def cadastrarEntregador():
+    print("FLUXO NORTE\n")
+    print("CADASTRAR ENTREGADOR\n")
+    id              = gerar_id_entregador(entregadores)
+    nomeEntregador  = ""
+    veiculo         = ""
+    idsPedido       = []
+    disponibilidade = []
+    while nomeEntregador == "":
+        nomeEntregador = input("Digite o nome do entregador: ")
+
+        if nomeEntregador == "":
+            print("Digite um nome válido!")
+        
+    veiculo = selecioneVeiculo()
+
+    print("Selecione o primeiro período de trabalho deste entregador: ")
+    periodo1 = selecionePeriodo()
+    disponibilidade.append(periodo1)
+    
+    periodo2 = periodo1
+    while periodo2 == periodo1:            
+        print("Selecione o segundo período de trabalho deste entregador: ")
+        periodo2 = selecionePeriodo()
+        if periodo2 == periodo1:
+            print("O segundo periodo não pode ser o mesmo do primeiro. Tente novamente")
+
+    disponibilidade.append(periodo2)
+    
+    entregadores[id] = [nomeEntregador, veiculo, idsPedido, disponibilidade]
+    limpar_tela()
+    print("\nENTREGADOR CADASTRADO")
+    print(f" -> ID Entregador: {id}              ")
+    print(f" -> Nome Entregador: {nomeEntregador}")
+    print(f" -> Veículo: {veiculo}              ")
+    print(f" -> Pedidos: Este entregador ainda não possui nenhum pedido para entrega")
+    print(f" -> Disponibilidade: {disponibilidade}")
+    print("\n\n")
+
+def menuInicial():
+    print("----------SELECIONE-----------")
+    print("| 1 - Cadastrar Pedido       |")
+    print("| 2 - Atualizar Pedido       |")
+    print("| 3 - Cadastrar Entregador   |")
+    print("| 4 - Consultar              |")
+    print("| 0 - Finalizar Sistema      |")
+    print("------------------------------")
+
+opcao = "-1"
+while opcao != "9":
+    limpar_tela()
+    print("FLUXO NORTE\n")
+    menuInicial()
+
+    opcao = input("Selecione a opção desejada: ")
+    match(opcao):
+        case "1":
+            limpar_tela()
+            cadastrarPedido()
+            verificaVoltar()
+        case "2":
+            limpar_tela()
+            atualizarPedido()
+        case "3":
+            limpar_tela()
+            cadastrarEntregador()
+            verificaVoltar()
+        case "4":
+            limpar_tela()
+            selecionar_consulta(entregadores, pedidos)
+        case "0":
+            limpar_tela()
+            print("\nFINALIZAR SISTEMA\n")
+            if verificaFinalizar():
+                opcao = "9" 
+            continue
+        case _:
+            limpar_tela()
+            print("Ops! Opção inválida, tente novamente.")
+            opcao = "-1"
+            verificaVoltar()
