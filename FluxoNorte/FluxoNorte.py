@@ -1,5 +1,5 @@
 import os
-pedidos = {} 
+pedidos = {}
 entregadores = {}  
 
 def limpar_tela():
@@ -19,16 +19,20 @@ def contar_pedidos_ativos(id_entregador, pedidos):
     return total
 
 def ordenarPedidos(pedidos):
-    pedidos_ordenados = []
+    pedidos_alta = []
+    pedidos_normal = []
+
     for id_pedido, dados_pedido in pedidos.items():
         if dados_pedido[2] == "Alta":
-            pedidos_ordenados.append((id_pedido, dados_pedido))
+            pedidos_alta.append((id_pedido, dados_pedido))
+        else:
+            pedidos_normal.append((id_pedido, dados_pedido))
 
-    for id_pedido, dados_pedido in pedidos.items():
-        if dados_pedido[2] == "Normal":
-            pedidos_ordenados.append((id_pedido, dados_pedido))
+    pedidos_alta.sort()
+    pedidos_normal.sort()
 
-    return pedidos_ordenados
+    pedidos_alta.extend(pedidos_normal)
+    return pedidos_alta
 
 def gerarIdPedido(pedidos, nome_cliente):
     chaves_pedidos = pedidos.keys()
@@ -203,6 +207,8 @@ def selecionar_consulta(entregadores, pedidos):
                 limpar_tela()
                 print("========BUSCA PEDIDO PELO ID========\n")
                 idPedido = selecionar_pedido(pedidos)
+                if idPedido is None:
+                    continue
                 buscaPedidoID(pedidos, idPedido)
                 verificaVoltar()
             case "4": 
@@ -269,9 +275,9 @@ def exibePedido(id_pedido, dados_pedido):
     
 def verificaVoltar():
     voltar = ""
-    while voltar not in ["S"]:
+    while voltar != "S":
         voltar = input("Você deseja voltar ao menu anterior? (S) ").upper()
-        if voltar not in ['S']:
+        if voltar != "S":
             print("Digite uma opção válida")
             continue
 
@@ -321,6 +327,9 @@ def selecionar_pedido(pedidos):
             print("Ops! Pedido não encontrado ou cancelado.")
 
             tentar_novamente = input("Deseja tentar novamente? (S/N): ").upper()
+            if tentar_novamente != "S" and tentar_novamente != "N":
+                print("Digite uma opção valida!")
+                continue
             if tentar_novamente == "N":
                 return None
 
@@ -467,7 +476,6 @@ def atualizarPedido():
             case "1":
                 print("\nALTERAR STATUS PEDIDO\n")
                 idPedido = selecionar_pedido(pedidos)
-                idPedido = selecionar_pedido(pedidos)
                 if idPedido is None:
                     continue
                 status = selecioneStatus()
@@ -481,14 +489,20 @@ def atualizarPedido():
                     continue
 
                 confirmaCancelar(idPedido)
-                verificaVoltar()
             case "3":
                 print("\nASSOCIAR ENTREGADOR Á PEDIDO\n")
+
                 idPedido = selecionar_pedido(pedidos)
                 if idPedido is None:
                     continue
 
                 entregadoresDisp = entregadoresDisponiveis(idPedido, pedidos, entregadores)
+
+                if len(entregadoresDisp) == 0:
+                    print("\nNenhum entregador disponível para este pedido!")
+                    verificaVoltar()
+                    continue
+
                 id_entregador = busca_entregador(entregadores)
                 associaEntregador(id_entregador, idPedido, entregadoresDisp)
                 verificaVoltar()
