@@ -309,15 +309,20 @@ def qtdPedidosMaximo(veiculo):
         return 4
     else:
         return 6
-
+    
 def selecionar_pedido(pedidos):
     pedido_selecionado = None
+
     while pedido_selecionado is None:
         pedido = input("Insira o ID do pedido: ")
         if pedido in pedidos:
             pedido_selecionado = pedido
         else:
-            print("Ops! Pedido não encontrado ou Cancelado. Insira um ID válido!")
+            print("Ops! Pedido não encontrado ou cancelado.")
+
+            tentar_novamente = input("Deseja tentar novamente? (S/N): ").upper()
+            if tentar_novamente == "N":
+                return None
 
     return pedido_selecionado
 
@@ -462,6 +467,9 @@ def atualizarPedido():
             case "1":
                 print("\nALTERAR STATUS PEDIDO\n")
                 idPedido = selecionar_pedido(pedidos)
+                idPedido = selecionar_pedido(pedidos)
+                if idPedido is None:
+                    continue
                 status = selecioneStatus()
                 pedidos[idPedido][4] = status
                 print("Status do pedido alterado com sucesso!")
@@ -469,17 +477,26 @@ def atualizarPedido():
             case "2":
                 print("\nCANCELAR PEDIDO\n")
                 idPedido = selecionar_pedido(pedidos)
+                if idPedido is None:
+                    continue
+
                 confirmaCancelar(idPedido)
                 verificaVoltar()
             case "3":
                 print("\nASSOCIAR ENTREGADOR Á PEDIDO\n")
                 idPedido = selecionar_pedido(pedidos)
+                if idPedido is None:
+                    continue
+
                 entregadoresDisp = entregadoresDisponiveis(idPedido, pedidos, entregadores)
                 id_entregador = busca_entregador(entregadores)
                 associaEntregador(id_entregador, idPedido, entregadoresDisp)
                 verificaVoltar()
             case "4":
                 idPedido = selecionar_pedido(pedidos)
+                if idPedido is None:
+                    continue
+
                 removeAssociacao(idPedido)
                 verificaVoltar()
             case "0":
