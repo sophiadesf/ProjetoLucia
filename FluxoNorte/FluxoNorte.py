@@ -1,6 +1,6 @@
 import os
 pedidos = {}
-entregadores = {}  
+entregadores = {}
 
 def limpar_tela():
     if os.name == 'nt':
@@ -13,7 +13,7 @@ def contar_pedidos_ativos(id_entregador, pedidos):
     total = 0
 
     for dados_pedido in pedidos.values():
-        if (dados_pedido[5] == id_entregador and dados_pedido[4] != "Entregue"):
+        if (dados_pedido[5] == id_entregador and dados_pedido[4] != "Entregue" and dados_pedido[4] != "Cancelado"):
             total += 1
 
     return total
@@ -69,12 +69,12 @@ def selecionePrioridade():
                 
     return retPrioridade
 
-def selecioneStatus():
+def selecioneStatus(idEntregador):
     retStatus = ""
     while retStatus == "":
         print("-------STATUS-------")
         print("| 1 - Pendente       |")
-        print("| 2 - Em trânsito    |")
+        print("| 2 - Em rota        |")
         print("| 3 - Entregue       |")
         print("--------------------\n")
 
@@ -83,9 +83,15 @@ def selecioneStatus():
             case "1":
                 retStatus = "Pendente"
             case "2":
-                retStatus = "Em trânsito"
+                if idEntregador is None:
+                    print("Opção inválida! Para estar em rota precisa ter um entregador relacionado ao pedido!")
+                else:
+                    retStatus = "Em rota"
             case "3":
-                retStatus = "Entregue"
+                if idEntregador is None:
+                    print("Opção inválida! Para ser entregue precisa ter um entregador relacionado ao pedido!")
+                else:
+                    retStatus = "Entregue"
             case _:
                 print("Opção inválida! Tente novamente.")
 
@@ -256,7 +262,7 @@ def buscaPedidos(pedidos, tipo):
 def buscaPedidoID(pedidos, id):
     pedido = pedidos.get(id)
     if pedido is None:
-        print(f"\nOps! Não encontramos nenhum pedido com o ID {id}s\n")
+        print(f"\nOps! Não encontramos nenhum pedido com o ID {id}\n")
     else:
         exibePedido(id, pedido)
 
@@ -406,7 +412,6 @@ def cadastrarPedido():
     id     = gerarIdPedido(pedidos, nomeCliente)
 
     pedidos[id] = [nomeCliente, endereco, prioridade, descricao, status, None, periodoEntrega]
-    print(pedidos)
     
     limpar_tela()
     print("\nPEDIDO CADASTRADO")
@@ -427,7 +432,7 @@ def cancelaPedido(idPedido):
             if idPedido in entregadores[id_entregador][2]:
                 entregadores[id_entregador][2].remove(idPedido)
 
-    del pedidos[idPedido]
+    pedidos[idPedido][4] = "Cancelado"
     print(f"\nPedido {idPedido} cancelado com sucesso!")
 
 def removeAssociacao(idPedido):
@@ -441,7 +446,6 @@ def removeAssociacao(idPedido):
         print(f"\nAssociacao do entregador {id_entregador} ao pedido {idPedido} removido com sucesso!")
     else:
         print("\nEste pedido não possui nenhum entregador associado á ele!")
-    verificaVoltar()
 
 def confirmaCancelar(idPedido):
     confirma = ""
@@ -478,7 +482,7 @@ def atualizarPedido():
                 idPedido = selecionar_pedido(pedidos)
                 if idPedido is None:
                     continue
-                status = selecioneStatus()
+                status = selecioneStatus(pedidos[idPedido][5])
                 pedidos[idPedido][4] = status
                 print("Status do pedido alterado com sucesso!")
                 verificaVoltar()
@@ -512,7 +516,6 @@ def atualizarPedido():
                     continue
 
                 removeAssociacao(idPedido)
-                verificaVoltar()
             case "0":
                 print("CANCELANDO ATUALIZAÇÃO\n")
                 limpar_tela()
@@ -544,9 +547,14 @@ def cadastrarEntregador():
     disponibilidade = []
     while nomeEntregador == "":
         nomeEntregador = input("Digite o nome do entregador: ")
+        
+        for ent in entregadores.values():
+            if ent[0].upper() == nomeEntregador.upper():
+                print("Entregador já cadastrado!")
+                nomeEntregador = ""
 
         if nomeEntregador == "":
-            print("Digite um nome válido!")
+            print("Digite um nome válido!\n")
         
     veiculo = selecioneVeiculo()
 
@@ -579,9 +587,75 @@ def menuInicial():
     print("| 2 - Atualizar Pedido       |")
     print("| 3 - Cadastrar Entregador   |")
     print("| 4 - Consultar              |")
+    print("| 5 - Relatórios Textuais    |")
     print("| 0 - Finalizar Sistema      |")
     print("------------------------------")
 
+def menuRelatorios(pedidos, entregadores):
+    limpar_tela()
+    print("===== RELATÓRIOS TEXTUAIS =====\n")
+
+    total_pedidos = len(pedidos)
+
+    pendentes = 0
+    em_rota = 0
+    entregues = 0
+    cancelados = 0
+    alta_prioridade = 0
+
+    for dados in pedidos.values():
+        status = dados[4]
+        prioridade = dados[2]
+
+        if status == "Pendente":
+            pendentes += 1
+        elif status == "Em rota":
+            em_rota += 1
+        elif status == "Entregue":
+            entregues += 1
+        elif status == "Cancelado":
+            cancelados += 1
+
+        if prioridade == "Alta":
+            alta_prioridade += 1
+
+    print(f"Total de pedidos: {total_pedidos}")
+    print(f"Pedidos pendentes: {pendentes}")
+    print(f"Pedidos em rota: {em_rota}")
+    print(f"Pedidos entregues: {entregues}")
+    print(f"Pedidos cancelados: {cancelados}")
+    
+    print("\nPEDIDOS DE ALTA PRIORIDADE\n")
+    print(f"Pedidos de alta prioridade: {alta_prioridade}")
+    for id_pedido, dados in ordenarPedidos(pedidos):
+        if dados[2] == "Alta":
+            exibePedido(id_pedido, dados)
+
+    entregadorMaisEntregas(entregadores, pedidos)
+    verificaVoltar()
+
+def entregadorMaisEntregas(entregadores, pedidos):
+    maior_qtd = 0
+    melhor_entregador = ""
+
+    for id_entregador in entregadores:
+        qtd_entregas = 0
+
+        for dados_pedido in pedidos.values():
+            if dados_pedido[5] == id_entregador and dados_pedido[4] == "Entregue":
+                qtd_entregas += 1
+
+        if qtd_entregas > maior_qtd:
+            maior_qtd = qtd_entregas
+            melhor_entregador = id_entregador
+
+    print("\nENTREGADOR COM MAIS ENTREGAS")
+    if melhor_entregador != "":
+        print(f"ID: {melhor_entregador}")
+        print(f"Nome: {entregadores[melhor_entregador][0]}")
+        print(f"Total de entregas: {maior_qtd}")
+    else:
+        print("Não há nenhuma entrega realizada.")
 opcao = "-1"
 while opcao != "9":
     limpar_tela()
@@ -604,6 +678,8 @@ while opcao != "9":
         case "4":
             limpar_tela()
             selecionar_consulta(entregadores, pedidos)
+        case "5":
+            menuRelatorios(pedidos, entregadores)
         case "0":
             limpar_tela()
             print("\nFINALIZAR SISTEMA\n")
