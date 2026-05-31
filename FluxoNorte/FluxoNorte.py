@@ -9,6 +9,15 @@ def limpar_tela():
         os.system('clear && printf "\e[3J"')
         os.system('clear')
 
+def contar_pedidos_ativos(id_entregador, pedidos):
+    total = 0
+
+    for dados_pedido in pedidos.values():
+        if (dados_pedido[5] == id_entregador and dados_pedido[4] != "Entregue"):
+            total += 1
+
+    return total
+
 def gerarIdPedido(pedidos, nome_cliente):
     chaves_pedidos = pedidos.keys()
     inicial_cliente = nome_cliente[0]
@@ -136,7 +145,7 @@ def busca_entregador_disp (entregadores):
         for id_entregador, dados_entregador in entregadores.items():
             nome = dados_entregador[0]
             veiculo = dados_entregador[1]
-            pedidos_ativos = dados_entregador[2]
+            pedidos_ativos = contar_pedidos_ativos(id_entregador, pedidos)
             periodos = dados_entregador[3]
 
             limite_pedidos = qtdPedidosMaximo(veiculo)
@@ -323,7 +332,7 @@ def entregadoresDisponiveis(id_pedido, pedidos, entregadores):
     for id_entregador, dados_entregador in entregadores.items():
         nome = dados_entregador[0]
         veiculo = dados_entregador[1]
-        pedidos_ativos = dados_entregador[2]
+        pedidos_ativos = contar_pedidos_ativos(id_entregador, pedidos)
         periodos = dados_entregador[3]
 
         
