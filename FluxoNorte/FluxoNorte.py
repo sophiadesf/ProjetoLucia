@@ -18,13 +18,25 @@ def contar_pedidos_ativos(id_entregador, pedidos):
 
     return total
 
+def ordenarPedidos(pedidos):
+    pedidos_ordenados = []
+    for id_pedido, dados_pedido in pedidos.items():
+        if dados_pedido[2] == "Alta":
+            pedidos_ordenados.append((id_pedido, dados_pedido))
+
+    for id_pedido, dados_pedido in pedidos.items():
+        if dados_pedido[2] == "Normal":
+            pedidos_ordenados.append((id_pedido, dados_pedido))
+
+    return pedidos_ordenados
+
 def gerarIdPedido(pedidos, nome_cliente):
     chaves_pedidos = pedidos.keys()
     inicial_cliente = nome_cliente[0]
     maior_id = 0
     for chave_id in chaves_pedidos:
         
-        int_chave_id = int(chave_id[1]+chave_id[2]+chave_id[3]+chave_id[4])
+        int_chave_id = int(chave_id[1:])
         
         if int_chave_id > maior_id:
             maior_id = int_chave_id
@@ -134,7 +146,7 @@ def gerar_id_entregador(entregadores):
     maior_id += 1
     return str(maior_id).zfill(4)
 
-def busca_entregador_disp (entregadores):
+def busca_entregador_disp (entregadores, pedidos):
     periodos_sistema = ["Manhã", "Tarde", "Noite"]
 
     for periodo in periodos_sistema:
@@ -149,7 +161,7 @@ def busca_entregador_disp (entregadores):
             periodos = dados_entregador[3]
 
             limite_pedidos = qtdPedidosMaximo(veiculo)
-            vagas_restantes = limite_pedidos - len(pedidos_ativos)
+            vagas_restantes = limite_pedidos - pedidos_ativos
 
             if periodo in periodos and vagas_restantes > 0:
                 possui_disponivel = True
@@ -195,7 +207,7 @@ def selecionar_consulta(entregadores, pedidos):
                 verificaVoltar()
             case "4": 
                 limpar_tela()
-                busca_entregador_disp(entregadores)
+                busca_entregador_disp(entregadores, pedidos)
                 verificaVoltar()
             case "5":
                 limpar_tela()
@@ -214,7 +226,7 @@ def selecionar_consulta(entregadores, pedidos):
 def buscaEntregas(id_entregador, pedidos):
     possui_entregas = False
 
-    for id_pedido, dados_pedido in pedidos.items():
+    for id_pedido, dados_pedido in ordenarPedidos(pedidos):
         status = dados_pedido[4]
         entregador = dados_pedido[5]
 
@@ -227,7 +239,7 @@ def buscaEntregas(id_entregador, pedidos):
 
 def buscaPedidos(pedidos, tipo):
     possui_pedido = False
-    for id_pedido, dados_pedido in pedidos.items():
+    for id_pedido, dados_pedido in ordenarPedidos(pedidos):
         if dados_pedido[4] == tipo:
             possui_pedido = True
             exibePedido(id_pedido, dados_pedido)
@@ -237,14 +249,14 @@ def buscaPedidos(pedidos, tipo):
 
 def buscaPedidoID(pedidos, id):
     pedido = pedidos.get(id)
-    if pedido == None:
+    if pedido is None:
         print(f"\nOps! Não encontramos nenhum pedido com o ID {id}s\n")
     else:
         exibePedido(id, pedido)
 
 def exibePedido(id_pedido, dados_pedido):
     entregador = dados_pedido[5]
-    if entregador == None:
+    if entregador is None:
         entregador = "Não Definido"
         
     print("=============================================================================")
@@ -292,12 +304,11 @@ def selecionePeriodo():
 
 def qtdPedidosMaximo(veiculo):
     if veiculo == "Moto":
-        carga_max = 2
-    if veiculo == "Carro":
-        carga_max = 4
-    if veiculo == "Van":
-        carga_max = 6
-    return carga_max
+        return 2
+    elif veiculo == "Carro":
+        return 4
+    else:
+        return 6
 
 def selecionar_pedido(pedidos):
     pedido_selecionado = None
@@ -338,16 +349,16 @@ def entregadoresDisponiveis(id_pedido, pedidos, entregadores):
         
         limite_pedidos = qtdPedidosMaximo(veiculo)
         periodo_ok = periodo_pedido in periodos
-        capacidade_ok = len(pedidos_ativos) < limite_pedidos
+        capacidade_ok = pedidos_ativos < limite_pedidos
 
         if periodo_ok and capacidade_ok:
             encontrou = True
-            vagas_restantes = limite_pedidos - len(pedidos_ativos)
+            vagas_restantes = limite_pedidos - pedidos_ativos
             entregadoresDisp.append(id_entregador)
 
             print("--------------------------------------------------------------------------------------------")
             print(f"ID: {id_entregador:<5}  Nome: {nome:<20} | Veículo: {veiculo:<25}")
-            print(f"Pedidos ativos: {len(pedidos_ativos):<25} | Capacidade máxima: {limite_pedidos:<25} | Vagas restantes: {vagas_restantes:<5}")
+            print(f"Pedidos ativos: {pedidos_ativos:<25} | Capacidade máxima: {limite_pedidos:<25} | Vagas restantes: {vagas_restantes:<5}")
             print(f"Períodos disponíveis: {periodos}")
             print("--------------------------------------------------------------------------------------------")
 
